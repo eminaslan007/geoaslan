@@ -176,13 +176,13 @@ export function setupMultiplayer(io: Server): void {
                 // 1. Tetikleyen kişiye
                 playerRooms.set(socket.id, roomId);
                 socket.join(roomId);
-                console.log(`📡 SEND MATCH FOUND TO HOST: ${username}`);
+                console.log(`📡 [${roomId}] SEND MATCH FOUND TO HOST: ${username} (${socket.id})`);
                 socket.emit('match_found', matchInfo);
 
                 // 2. Diğerlerine
                 for (const opp of selectedOpponents) {
                     playerRooms.set(opp.socketId, roomId);
-                    console.log(`📡 SEND MATCH FOUND TO OPP: ${opp.username}`);
+                    console.log(`📡 [${roomId}] SEND MATCH FOUND TO OPP: ${opp.username} (${opp.socketId})`);
                     io.in(opp.socketId).socketsJoin(roomId);
                     io.to(opp.socketId).emit('match_found', matchInfo);
                 }

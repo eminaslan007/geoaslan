@@ -11,7 +11,7 @@ const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 let sharedSocket: Socket | null = null;
 
 function getOrCreateSocket(): Socket {
-    if (!sharedSocket || sharedSocket.disconnected) {
+    if (!sharedSocket) {
         sharedSocket = io(SOCKET_URL, {
             transports: ['websocket', 'polling'],
             autoConnect: true,

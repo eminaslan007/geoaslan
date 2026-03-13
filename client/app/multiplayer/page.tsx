@@ -34,15 +34,26 @@ export default function MultiplayerLobbyPage() {
         const socket = getSocket();
 
         const onMatchFound = (data: { roomId: string }) => {
+            console.log('🎉 EŞLEŞME BULUNDU! Odaya yönlendiriliyor:', data.roomId);
             router.push(`/multiplayer/${data.roomId}`);
+
+            // Eğer router 2 saniye içinde değişmezse zorunlu yönlendir (Garanti yöntem)
+            setTimeout(() => {
+                if (window.location.pathname !== `/multiplayer/${data.roomId}`) {
+                    console.log('⚠️ Router gecikti, zorunlu yönlendirme yapılıyor...');
+                    window.location.href = `/multiplayer/${data.roomId}`;
+                }
+            }, 2000);
         };
 
+        console.log('📡 MatchFound listener eklendi');
         socket.on('match_found', onMatchFound);
 
         return () => {
+            console.log('📡 MatchFound listener kaldırıldı');
             socket.off('match_found', onMatchFound);
         };
-    }, [connected, router]);
+    }, [router]);
 
     // Arama sayacı
     useEffect(() => {
