@@ -462,7 +462,7 @@ export default function MultiplayerGamePage() {
                 showResult={showResult}
                 actualLocation={showResult ? actualLocation : null}
                 guessLocation={showResult ? (myResult?.guessLocation || null) : null}
-                opponentGuessLocation={showResult && otherResults.length > 0 ? (otherResults[0]?.guessLocation || null) : null}
+                otherResults={showResult ? otherResults : null}
                 distanceKm={showResult ? (myResult?.distanceKm ?? null) : null}
                 roundScore={showResult ? (myResult?.roundScore ?? null) : null}
                 isLastRound={isLastRound}

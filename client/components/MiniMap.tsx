@@ -24,7 +24,12 @@ interface MiniMapProps {
     showResult?: boolean;
     actualLocation?: { lat: number; lng: number } | null;
     guessLocation?: { lat: number; lng: number } | null;
-    opponentGuessLocation?: { lat: number; lng: number } | null;
+    otherResults?: {
+        uid: string;
+        username: string;
+        guessLocation: { lat: number; lng: number } | null;
+        distanceKm: number;
+    }[] | null;
     distanceKm?: number | null;
     roundScore?: number | null;
     isLastRound?: boolean;
@@ -38,7 +43,7 @@ export default function MiniMap({
     showResult,
     actualLocation,
     guessLocation,
-    opponentGuessLocation,
+    otherResults,
     distanceKm,
     roundScore,
     isLastRound,
@@ -210,36 +215,57 @@ export default function MiniMap({
             [actualLocation.lat, actualLocation.lng],
         ];
 
-        if (opponentGuessLocation) {
-            const opponentIcon = L.divIcon({
-                className: '',
-                html: `
-                <div style="position: relative; width: 30px; height: 42px;">
-                  <svg width="30" height="42" viewBox="0 0 30 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 0C6.716 0 0 6.716 0 15c0 10.5 15 27 15 27s15-16.5 15-27C30 6.716 23.284 0 15 0z" fill="#F44336"/>
-                    <circle cx="15" cy="14" r="6" fill="white"/>
-                    <text x="15" y="17" text-anchor="middle" fill="#F44336" font-size="9" font-weight="bold">⚔</text>
-                  </svg>
-                </div>
-                `,
-                iconSize: [30, 42],
-                iconAnchor: [15, 42],
+        if (otherResults && otherResults.length > 0) {
+            otherResults.forEach((opp, idx) => {
+                if (!opp.guessLocation) return;
+
+                // Rakip Renkleri (Kırmızı tonları)
+                const colors = ['#F44336', '#E91E63', '#9C27B0'];
+                const color = colors[idx % colors.length];
+
+                const opponentIcon = L.divIcon({
+                    className: '',
+                    html: `
+                    <div style="position: relative; width: 30px; height: 42px;">
+                      <svg width="30" height="42" viewBox="0 0 30 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 0C6.716 0 0 6.716 0 15c0 10.5 15 27 15 27s15-16.5 15-27C30 6.716 23.284 0 15 0z" fill="${color}"/>
+                        <circle cx="15" cy="14" r="6" fill="white"/>
+                      </svg>
+                      <div style="
+                        position: absolute;
+                        top: -20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: rgba(0,0,0,0.8);
+                        color: #fff;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-size: 10px;
+                        white-space: nowrap;
+                        pointer-events: none;
+                        border: 1px solid ${color};
+                      ">${opp.username} (${formatDistance(opp.distanceKm)})</div>
+                    </div>
+                    `,
+                    iconSize: [30, 42],
+                    iconAnchor: [15, 42],
+                });
+
+                const opponentMarker = L.marker([opp.guessLocation.lat, opp.guessLocation.lng], { icon: opponentIcon }).addTo(map);
+
+                const opponentLine = L.polyline(
+                    [[opp.guessLocation.lat, opp.guessLocation.lng], [actualLocation.lat, actualLocation.lng]],
+                    {
+                        color: color,
+                        weight: 2,
+                        dashArray: '6, 6',
+                        opacity: 0.7,
+                    }
+                ).addTo(map);
+
+                layers.push(opponentMarker, opponentLine);
+                allPoints.push([opp.guessLocation.lat, opp.guessLocation.lng]);
             });
-
-            const opponentMarker = L.marker([opponentGuessLocation.lat, opponentGuessLocation.lng], { icon: opponentIcon }).addTo(map);
-
-            const opponentLine = L.polyline(
-                [[opponentGuessLocation.lat, opponentGuessLocation.lng], [actualLocation.lat, actualLocation.lng]],
-                {
-                    color: '#F44336',
-                    weight: 2,
-                    dashArray: '6, 6',
-                    opacity: 0.7,
-                }
-            ).addTo(map);
-
-            layers.push(opponentMarker, opponentLine);
-            allPoints.push([opponentGuessLocation.lat, opponentGuessLocation.lng]);
         }
 
         resultLayersRef.current = layers;
@@ -253,7 +279,7 @@ export default function MiniMap({
             });
         }, 300);
 
-    }, [showResult, actualLocation, guessLocation, opponentGuessLocation, distanceKm]);
+    }, [showResult, actualLocation, guessLocation, otherResults, distanceKm]);
 
     // Yeni tur başladığında haritayı sıfırla
     useEffect(() => {
