@@ -101,26 +101,27 @@ export function setupMultiplayer(io: Server): void {
         // 1v1 OTOMATİK EŞLEŞME (mevcut sistem)
         // ==========================================
 
-        socket.on('find_match', (data: { uid: string; username: string; mapId: string; mode: string; maxPlayers?: number }) => {
-            const { uid, username, mapId, mode, maxPlayers = 2 } = data; // varsayılan 2 (1v1)
+        socket.on('find_match', async (data: { uid: string; username: string; mapId: string; mode: string; maxPlayers?: number }) => {
+            const { uid, username, mapId, mode, maxPlayers = 2 } = data;
+
+            console.log(`🔍 Eşleşme aranıyor: ${username} (${maxPlayers} kişilik, Harita: ${mapId})`);
 
             // Varsa eski arayışı sil
             const existingIdx = matchQueue.findIndex(q => q.uid === uid);
             if (existingIdx !== -1) matchQueue.splice(existingIdx, 1);
 
-            // Uygun rakipleri bul (Aynı harita, aynı mod ve aynı kişi sayısı isteyen, kendi değil)
+            // Uygun rakipleri bul
             const potentialOpponents = matchQueue.filter(
                 q => q.mapId === mapId && q.mode === mode && q.maxPlayers === maxPlayers && q.uid !== uid
             );
 
-            // Gerekli rakip sayısı = Seçilen oyuncu sayısı - 1 (kendisi)
             const neededOpponents = maxPlayers - 1;
 
             if (potentialOpponents.length >= neededOpponents) {
-                // Yeterli rakip bulundu! Rakipleri kuyruktan çek
+                // Yeterli rakip bulundu! 
                 const selectedOpponents = potentialOpponents.slice(0, neededOpponents);
 
-                // Seçilenleri asıl kuyruktan sil
+                // Kuyruktan temizle
                 selectedOpponents.forEach(opp => {
                     const idx = matchQueue.findIndex(q => q.socketId === opp.socketId);
                     if (idx !== -1) matchQueue.splice(idx, 1);
@@ -145,15 +146,16 @@ export function setupMultiplayer(io: Server): void {
                     isPrivate: false,
                 };
 
-                // Kendisini odaya ekle
+                // Oyuncu bilgilerini topla
+                const matchPlayersResponse = [{ uid, username }];
+
+                // HOST (Tetikleyen kişi)
                 room.players.set(socket.id, {
                     socketId: socket.id, uid, username,
                     score: 0, currentGuess: null, guessedThisRound: false, readyForNext: false, isHost: true,
                 });
 
-                // Diğerlerini odaya ekle
-                const matchPlayersResponse = [{ uid, username }];
-
+                // Diğerleri
                 selectedOpponents.forEach(opp => {
                     room.players.set(opp.socketId, {
                         socketId: opp.socketId, uid: opp.uid, username: opp.username,
@@ -165,33 +167,35 @@ export function setupMultiplayer(io: Server): void {
                 rooms.set(roomId, room);
                 codesToRooms.set(code, roomId);
 
-                // Tüm oyuncuları socket odasına (roomId) al ve haber ver
                 const matchInfo = {
                     roomId, mapId, mode, maxPlayers,
                     players: matchPlayersResponse,
                 };
 
-                // Kendi işlemleri
+                // HERKESE BİREYSEL OLARAK GÖNDER (En garantisi budur)
+                // 1. Tetikleyen kişiye
                 playerRooms.set(socket.id, roomId);
                 socket.join(roomId);
+                socket.emit('match_found', matchInfo);
 
-                // Diğer oyuncuların işlemleri
-                selectedOpponents.forEach(opp => {
+                // 2. Diğerlerine
+                for (const opp of selectedOpponents) {
                     playerRooms.set(opp.socketId, roomId);
-                    // Püf nokta: .socketsJoin(roomId) adapter üzerinden çalıştığı için memory'de kopukluk olsa bile odaya alır.
+                    // Odaya al (async ama beklemesek de olur çünkü bireysel emit yapıyoruz)
                     io.in(opp.socketId).socketsJoin(roomId);
-                });
+                    // Bireysel mesaj
+                    io.to(opp.socketId).emit('match_found', matchInfo);
+                }
 
-                // Herkese "eşleşme bulundu" mesajını yolla! (Tüm socketlerin roomId'ye girdiğinden emin olduk)
-                io.to(roomId).emit('match_found', matchInfo);
+                console.log(`⚔️ MATCH FOUND! Oda: ${roomId} | Katılanlar: ${matchPlayersResponse.map(p => p.username).join(', ')}`);
 
-                console.log(`⚔️ Otomatik Eşleşme Bulundu (${maxPlayers} Kişi) — Oda: ${roomId} | Katılanlar: ${matchPlayersResponse.map(p => p.username).join(', ')}`);
-
+                // Oyunun başlaması için kısa bir gecikme (Clientların sayfaya yönlenmesi için)
                 setTimeout(() => startRound(io, roomId), 3500);
             } else {
+                // Kuyruğa ekle
                 matchQueue.push({ socketId: socket.id, uid, username, mapId, mode, maxPlayers });
                 socket.emit('match_queued', { position: matchQueue.length });
-                console.log(`🔍 Otomatik Kuyrukta (${maxPlayers} Kişi): ${username} (Bekleyen uygun kişi: ${potentialOpponents.length}/${neededOpponents})`);
+                console.log(`⏳ Kuyruğa girildi: ${username} (${potentialOpponents.length}/${neededOpponents} rakip bulundu)`);
             }
         });
 
