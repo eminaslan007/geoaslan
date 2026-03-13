@@ -1,0 +1,199 @@
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\app\game\[id]\page.tsx
+   75:8   warning  React Hook useEffect has missing dependencies: 'handleViewSummary' and 'router'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   94:23  error    Unexpected any. Specify a different type                                                                                             @typescript-eslint/no-explicit-any
+  133:53  error    Unexpected any. Specify a different type                                                                                             @typescript-eslint/no-explicit-any
+  158:23  error    Unexpected any. Specify a different type                                                                                             @typescript-eslint/no-explicit-any
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\app\login\page.tsx
+  25:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\app\multiplayer\[roomId]\page.tsx
+  158:8   warning  React Hook useEffect has a missing dependency: 'socketRef'. Either include it or remove the dependency array. Mutable values like 'socketRef.current' aren't valid dependencies because mutating them doesn't re-render the component                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+  158:9   error    Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\app\multiplayer\[roomId]\page.tsx:158:9
+  156 |             socket.off('game_aborted', onGameAborted);
+  157 |         };
+> 158 |     }, [socketRef.current]);
+      |         ^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  159 |
+  160 |     // Geri sayım timer
+  161 |     useEffect(() => {  react-hooks/refs
+  158:9   error    Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\app\multiplayer\[roomId]\page.tsx:158:9
+  156 |             socket.off('game_aborted', onGameAborted);
+  157 |         };
+> 158 |     }, [socketRef.current]);
+      |         ^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  159 |
+  160 |     // Geri sayım timer
+  161 |     useEffect(() => {  react-hooks/refs
+  221:35  warning  'color' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  296:11  warning  'myPlayer' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\app\multiplayer\page.tsx
+  51:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\app\multiplayer\page.tsx:51:13
+  49 |         let timer: ReturnType<typeof setInterval>;
+  50 |         if (searching) {
+> 51 |             setSearchTime(0);
+     |             ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  52 |             timer = setInterval(() => setSearchTime(t => t + 1), 1000);
+  53 |         }
+  54 |         return () => clearInterval(timer);  react-hooks/set-state-in-effect
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\app\play\page.tsx
+  79:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\app\profile\page.tsx
+  17:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\app\register\page.tsx
+  26:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\components\GameSummary.tsx
+  28:5  warning  'mapId' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\components\MiniMap.tsx
+    3:39  warning  'useCallback' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+   13:31  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  111:8   warning  React Hook useEffect has missing dependencies: 'guessDisabled' and 'showResult'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react-hooks/exhaustive-deps
+  128:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\components\MiniMap.tsx:128:9
+  126 |
+  127 |         // Haritayı büyüt
+> 128 |         setMapSize('large');
+      |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  129 |
+  130 |         // Tahmin pin'i (turuncu)
+  131 |         const guessIcon = L.divIcon({                                                                                      react-hooks/set-state-in-effect
+  269:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\components\MiniMap.tsx:269:13
+  267 |                 markerRef.current = null;
+  268 |             }
+> 269 |             setGuess(null);
+      |             ^^^^^^^^ Avoid calling setState() directly within an effect
+  270 |             setMapSize('small');
+  271 |             setTimeout(() => {
+  272 |                 safeMapAction(map, mapRef.current, (m) => {  react-hooks/set-state-in-effect
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\components\StreetView.tsx
+   13:17  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   20:32  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   21:33  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   44:20  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   44:35  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   50:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   99:33  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   99:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  140:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\components\StreetView.tsx:140:13
+  138 |     useEffect(() => {
+  139 |         if (window.google && window.google.maps) {
+> 140 |             findAndShowPanorama(lat, lng);
+      |             ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  141 |             return;
+  142 |         }
+  143 |                       react-hooks/set-state-in-effect
+  169:8   warning  React Hook useEffect has missing dependencies: 'findAndShowPanorama', 'lat', and 'lng'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+  174:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\components\StreetView.tsx:174:13
+  172 |     useEffect(() => {
+  173 |         if (window.google && window.google.maps) {
+> 174 |             findAndShowPanorama(lat, lng);
+      |             ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  175 |         }
+  176 |     }, [lat, lng, findAndShowPanorama]);
+  177 |  react-hooks/set-state-in-effect
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\hooks\useSocket.ts
+  65:53  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-explicit-any
+  70:12  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\hooks\useSocket.ts:70:12
+  68 |
+  69 |     // Doğrudan socket ref'i döndür — böylece listener'lar kararlı kalır
+> 70 |     return { socket: socketRef.current, socketRef, connected, emit };
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  71 | }
+  72 |  react-hooks/refs
+  70:22  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\hooks\useSocket.ts:70:22
+  68 |
+  69 |     // Doğrudan socket ref'i döndür — böylece listener'lar kararlı kalır
+> 70 |     return { socket: socketRef.current, socketRef, connected, emit };
+     |                      ^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  71 | }
+  72 |                                react-hooks/refs
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\lib\auth.tsx
+  68:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\lib\auth.tsx:68:13
+  66 |         if (!auth) {
+  67 |             console.warn('Firebase auth başlatılamadı, lütfen .env ayarlarınızı kontrol edin.');
+> 68 |             setLoading(false);
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  69 |             return;
+  70 |         }
+  71 |  react-hooks/set-state-in-effect
+
+C:\Users\emin4slan\Desktop\geoaslan-main (1)\geoaslan-main\client\lib\firebase.ts
+  36:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 38 problems (30 errors, 8 warnings)
+

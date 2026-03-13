@@ -76,7 +76,7 @@ export default function MultiplayerGamePage() {
         const socket = socketRef.current;
         if (!socket) return;
 
-        const onRoundStart = (data: any) => {
+        const onRoundStart = (data: { round: number; location: { lat: number; lng: number }; players: PlayerInfo[] }) => {
             setCurrentRound(data.round);
             setCurrentLocation(data.location);
             setPlayers(data.players);
@@ -105,7 +105,7 @@ export default function MultiplayerGamePage() {
             });
         };
 
-        const onRoundResult = (data: any) => {
+        const onRoundResult = (data: { results: RoundResultData[]; actualLocation: { lat: number; lng: number }; isLastRound: boolean }) => {
             setRoundResults(data.results);
             setActualLocation(data.actualLocation);
             setIsLastRound(data.isLastRound);
@@ -117,7 +117,7 @@ export default function MultiplayerGamePage() {
             })));
         };
 
-        const onGameOver = (data: any) => {
+        const onGameOver = (data: { winner: string | null; players: PlayerInfo[] }) => {
             setGameOverData(data);
             setGameOver(true);
         };

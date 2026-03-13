@@ -33,7 +33,7 @@ export default function MultiplayerLobbyPage() {
     useEffect(() => {
         const socket = getSocket();
 
-        const onMatchFound = (data: any) => {
+        const onMatchFound = (data: { roomId: string }) => {
             router.push(`/multiplayer/${data.roomId}`);
         };
 
@@ -59,7 +59,7 @@ export default function MultiplayerLobbyPage() {
         setSearching(true);
         emit('find_match', {
             uid: user.uid,
-            username: (user as any).username || user.email?.split('@')[0] || 'Oyuncu',
+            username: (user as { username?: string }).username || user.email?.split('@')[0] || 'Oyuncu',
             mapId: selectedMap,
             mode: 'classic',
             maxPlayers, // Seçilen oyuncu sayısını gönder
