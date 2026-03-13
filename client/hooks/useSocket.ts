@@ -23,6 +23,11 @@ function getOrCreateSocket(): Socket {
     return sharedSocket;
 }
 
+/** Global socket'e doğrudan erişim — listener kurulurken kullan */
+export function getSocket(): Socket {
+    return getOrCreateSocket();
+}
+
 /**
  * Socket.IO bağlantı hook'u
  * Tüm sayfalarda aynı socket kullanılır

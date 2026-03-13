@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/lib/auth';
-import { useSocket } from '@/hooks/useSocket';
+import { useSocket, getSocket } from '@/hooks/useSocket';
 
 const MAPS = [
     { id: 'world', name: 'Dünya', emoji: '🌍' },
@@ -15,44 +15,36 @@ const MAPS = [
 
 export default function MultiplayerLobbyPage() {
     const { user, loading: authLoading } = useAuth();
-    const { socketRef, connected, emit } = useSocket();
+    const { connected, emit } = useSocket();
     const router = useRouter();
 
     const [selectedMap, setSelectedMap] = useState('world');
+    const [maxPlayers, setMaxPlayers] = useState(2); // 2 = 1v1, 3 = üçlü, 4 = dörtlü
+
     const [searching, setSearching] = useState(false);
     const [searchTime, setSearchTime] = useState(0);
 
     // Auth kontrolü
     useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
-        }
+        if (!authLoading && !user) router.push('/login');
     }, [user, authLoading, router]);
 
-    // Eşleşme ve kuyruk event'leri
+    // ── Socket olayları ──
     useEffect(() => {
-        const socket = socketRef.current;
-        if (!socket) return;
+        const socket = getSocket();
 
         const onMatchFound = (data: any) => {
-            console.log('⚔️ Eşleşme bulundu:', data);
             router.push(`/multiplayer/${data.roomId}`);
         };
 
-        const onMatchQueued = () => {
-            console.log('🔍 Kuyrukta bekleniyor...');
-        };
-
         socket.on('match_found', onMatchFound);
-        socket.on('match_queued', onMatchQueued);
 
         return () => {
             socket.off('match_found', onMatchFound);
-            socket.off('match_queued', onMatchQueued);
         };
-    }, [socketRef.current, router]);
+    }, [connected, router]);
 
-    // Arama süresi timer
+    // Arama sayacı
     useEffect(() => {
         let timer: ReturnType<typeof setInterval>;
         if (searching) {
@@ -67,11 +59,12 @@ export default function MultiplayerLobbyPage() {
         setSearching(true);
         emit('find_match', {
             uid: user.uid,
-            username: user.username || user.email?.split('@')[0] || 'Oyuncu',
+            username: (user as any).username || user.email?.split('@')[0] || 'Oyuncu',
             mapId: selectedMap,
             mode: 'classic',
+            maxPlayers, // Seçilen oyuncu sayısını gönder
         });
-    }, [user, connected, selectedMap, emit]);
+    }, [user, connected, selectedMap, maxPlayers, emit]);
 
     const handleCancel = useCallback(() => {
         setSearching(false);
@@ -95,110 +88,124 @@ export default function MultiplayerLobbyPage() {
                 padding: '90px 24px 40px',
                 background: 'radial-gradient(ellipse at center top, rgba(245, 166, 35, 0.05) 0%, transparent 60%)',
             }}>
-                <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+                <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+
                     {/* Başlık */}
-                    <div className="animate-fadeIn" style={{ textAlign: 'center', marginBottom: '48px' }}>
-                        <span style={{ fontSize: '64px', display: 'block', marginBottom: '16px' }}>⚔️</span>
+                    <div className="animate-fadeIn" style={{ textAlign: 'center', marginBottom: '40px' }}>
+                        <span style={{ fontSize: '64px', display: 'block', marginBottom: '16px' }}>🎮</span>
                         <h1 style={{ fontSize: '36px', fontWeight: 800, marginBottom: '8px' }}>
-                            <span className="gradient-text">Online Karşılaşma</span>
+                            <span className="gradient-text">Çok Oyunculu</span>
                         </h1>
-                        <p style={{ color: 'var(--text-secondary)' }}>
-                            Rakibini bul, aynı konumları tahmin edin, en iyi puan kazanır!
-                        </p>
+                        <p style={{ color: 'var(--text-secondary)' }}>Eşleştirme kuyruğuna katıl!</p>
                     </div>
 
-                    {/* Arama Ekranı */}
                     {searching ? (
                         <div className="glass-card animate-fadeIn" style={{ padding: '48px', textAlign: 'center' }}>
-                            {/* Dönen animasyon */}
                             <div style={{
-                                width: '80px',
-                                height: '80px',
-                                borderRadius: '50%',
+                                width: '80px', height: '80px', borderRadius: '50%',
                                 border: '4px solid rgba(245, 166, 35, 0.2)',
                                 borderTopColor: 'var(--accent-gold)',
                                 animation: 'spin 1s linear infinite',
                                 margin: '0 auto 24px',
                             }} />
-
                             <h2 style={{ fontSize: '22px', fontWeight: 700, marginBottom: '8px' }}>
-                                Rakip Aranıyor...
+                                Rakipler Aranıyor...
                             </h2>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '8px' }}>
-                                {MAPS.find(m => m.id === selectedMap)?.emoji} {MAPS.find(m => m.id === selectedMap)?.name} haritasında
+                                {maxPlayers} Kişilik Mod • {MAPS.find(m => m.id === selectedMap)?.emoji} {MAPS.find(m => m.id === selectedMap)?.name} haritası
                             </p>
                             <p style={{ color: 'var(--accent-gold)', fontSize: '24px', fontWeight: 700, marginBottom: '24px' }}>
                                 {Math.floor(searchTime / 60).toString().padStart(2, '0')}:{(searchTime % 60).toString().padStart(2, '0')}
                             </p>
-
-                            <button
-                                className="btn-secondary"
-                                onClick={handleCancel}
-                                style={{ padding: '12px 32px', fontSize: '14px' }}
-                            >
-                                ✕ İptal Et
-                            </button>
-
-                            <style jsx>{`
-                                @keyframes spin {
-                                    to { transform: rotate(360deg); }
-                                }
-                            `}</style>
+                            <button className="btn-secondary" onClick={handleCancel} style={{ padding: '12px 32px' }}>✕ İptal Et</button>
+                            <style jsx>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                         </div>
                     ) : (
-                        <>
+                        <div className="animate-slideUp">
+
+                            {/* Kişi Sayısı Seçimi */}
+                            <div className="glass-card" style={{ padding: '24px', marginBottom: '24px' }}>
+                                <label style={{ fontSize: '13px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '16px' }}>
+                                    👥 Oyun Modu
+                                </label>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    {[2, 3, 4].map(n => (
+                                        <button
+                                            key={n}
+                                            onClick={() => setMaxPlayers(n)}
+                                            style={{
+                                                flex: 1, padding: '16px', borderRadius: '12px',
+                                                border: maxPlayers === n ? '2px solid var(--accent-gold)' : '1px solid var(--glass-border)',
+                                                background: maxPlayers === n ? 'rgba(245, 166, 35, 0.08)' : 'var(--bg-secondary)',
+                                                color: maxPlayers === n ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                                                fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center',
+                                            }}
+                                        >
+                                            <div style={{ fontSize: '22px' }}>
+                                                {n === 2 ? '👤👤' : n === 3 ? '👤👤👤' : '👤👤👤👤'}
+                                            </div>
+                                            <div style={{ fontSize: '14px', marginTop: '4px' }}>{n} Kişi</div>
+                                            <div style={{ fontSize: '11px', opacity: 0.6 }}>
+                                                {n === 2 ? '1v1' : n === 3 ? 'Üçlü' : 'Dörtlü'}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* Harita Seçimi */}
-                            <div className="animate-slideUp" style={{ marginBottom: '32px' }}>
-                                <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px' }}>🗺️ Harita Seç</h2>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-                                    {MAPS.map((map) => (
+                            <div className="glass-card" style={{ padding: '24px', marginBottom: '24px' }}>
+                                <label style={{ fontSize: '13px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '16px' }}>
+                                    🗺️ Harita
+                                </label>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                                    {MAPS.map(map => (
                                         <button
                                             key={map.id}
                                             onClick={() => setSelectedMap(map.id)}
-                                            className="glass-card"
                                             style={{
-                                                padding: '20px 12px',
-                                                cursor: 'pointer',
-                                                textAlign: 'center',
-                                                border: selectedMap === map.id
-                                                    ? '2px solid var(--accent-gold)'
-                                                    : '1px solid var(--glass-border)',
-                                                background: selectedMap === map.id ? 'rgba(245, 166, 35, 0.06)' : 'var(--glass-bg)',
-                                                transition: 'all 0.3s ease',
+                                                padding: '18px 10px', cursor: 'pointer', textAlign: 'center',
+                                                borderRadius: '12px',
+                                                border: selectedMap === map.id ? '2px solid var(--accent-gold)' : '1px solid var(--glass-border)',
+                                                background: selectedMap === map.id ? 'rgba(245, 166, 35, 0.06)' : 'var(--bg-secondary)',
+                                                color: 'var(--text-primary)',
+                                                transition: 'all 0.2s',
                                             }}
                                         >
-                                            <div style={{ fontSize: '28px', marginBottom: '4px' }}>{map.emoji}</div>
-                                            <div style={{ fontSize: '13px', fontWeight: 600 }}>{map.name}</div>
+                                            <div style={{ fontSize: '26px', marginBottom: '4px' }}>{map.emoji}</div>
+                                            <div style={{ fontSize: '12px', fontWeight: 600 }}>{map.name}</div>
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
                             {/* Kurallar */}
-                            <div className="glass-card animate-slideUp" style={{ padding: '24px', marginBottom: '32px', animationDelay: '0.1s' }}>
-                                <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '12px' }}>📜 Kurallar</h3>
+                            <div className="glass-card" style={{ padding: '20px', marginBottom: '24px' }}>
+                                <h3 style={{ fontSize: '13px', fontWeight: 700, marginBottom: '10px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    📜 Kurallar
+                                </h3>
                                 <ul style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 2, paddingLeft: '20px' }}>
-                                    <li>İki oyuncu aynı 5 konumu görür</li>
+                                    <li>Oyuncular aynı 5 konumu görür</li>
                                     <li>Her tur için 90 saniye süre var</li>
-                                    <li>En yakın tahmin → en çok puan</li>
-                                    <li>5 tur sonunda toplam puanı yüksek olan kazanır 🏆</li>
+                                    <li>En yakın tahmin → en yüksek puan</li>
+                                    <li>5 tur sonunda en çok puanı toplayan kazanır 🏆</li>
                                 </ul>
                             </div>
 
-                            {/* Başlat Butonu */}
-                            <div className="animate-slideUp" style={{ textAlign: 'center', animationDelay: '0.2s' }}>
+                            <div style={{ textAlign: 'center' }}>
                                 <button
-                                    className="btn-primary animate-pulse-glow"
+                                    className="btn-primary pulse-btn"
                                     onClick={handleFindMatch}
                                     disabled={!connected}
                                     style={{
                                         padding: '18px 64px',
                                         fontSize: '20px',
                                         fontWeight: 800,
+                                        width: '100%',
                                         opacity: connected ? 1 : 0.5,
                                     }}
                                 >
-                                    ⚔️ Rakip Bul
+                                    ⚔️ OYUNA BAŞLA
                                 </button>
                                 {!connected && (
                                     <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '8px' }}>
@@ -206,8 +213,9 @@ export default function MultiplayerLobbyPage() {
                                     </p>
                                 )}
                             </div>
-                        </>
+                        </div>
                     )}
+
                 </div>
             </main>
         </>
