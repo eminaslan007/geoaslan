@@ -104,7 +104,10 @@ export function setupMultiplayer(io: Server): void {
         socket.on('find_match', async (data: { uid: string; username: string; mapId: string; mode: string; maxPlayers?: number }) => {
             const { uid, username, mapId, mode, maxPlayers = 2 } = data;
 
-            console.log(`🔍 Eşleşme aranıyor: ${username} (${maxPlayers} kişilik, Harita: ${mapId})`);
+            // ÖNEMLİ: Her oyuncuyu kendi UID odasına al (Sinyalleri garanti etmek için)
+            socket.join(`user_${uid}`);
+
+            console.log(`🔍 [${uid}] Eşleşme aranıyor: ${username} (${maxPlayers} kişilik, Harita: ${mapId})`);
 
             // Varsa eski arayışı sil
             const existingIdx = matchQueue.findIndex(q => q.uid === uid);
@@ -172,19 +175,22 @@ export function setupMultiplayer(io: Server): void {
                     players: matchPlayersResponse,
                 };
 
-                // HERKESE BİREYSEL OLARAK GÖNDER (En garantisi budur)
+                // HERKESE UID ÜZERİNDEN GÖNDER (En garantisi budur, socketId değişse bile tünele gider)
                 // 1. Tetikleyen kişiye
                 playerRooms.set(socket.id, roomId);
                 socket.join(roomId);
-                console.log(`📡 [${roomId}] SEND MATCH FOUND TO HOST: ${username} (${socket.id})`);
-                socket.emit('match_found', matchInfo);
+                console.log(`📡 [${roomId}] SEND MATCH FOUND TO HOST: ${username} (via user_${uid})`);
+                io.to(`user_${uid}`).emit('match_found', matchInfo);
 
                 // 2. Diğerlerine
                 for (const opp of selectedOpponents) {
                     playerRooms.set(opp.socketId, roomId);
-                    console.log(`📡 [${roomId}] SEND MATCH FOUND TO OPP: ${opp.username} (${opp.socketId})`);
-                    io.in(opp.socketId).socketsJoin(roomId);
-                    io.to(opp.socketId).emit('match_found', matchInfo);
+                    console.log(`📡 [${roomId}] SEND MATCH FOUND TO OPP: ${opp.username} (via user_${opp.uid})`);
+
+                    // Önce odaya al (tüm cihazlarını)
+                    io.in(`user_${opp.uid}`).socketsJoin(roomId);
+                    // UID tüneline gönder
+                    io.to(`user_${opp.uid}`).emit('match_found', matchInfo);
                 }
 
                 console.log(`⚔️ MATCH FOUND!`);
