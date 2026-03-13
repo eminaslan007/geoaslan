@@ -19,16 +19,32 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3000';
 
 // HTTP server + Socket.IO
 const httpServer = createServer(app);
+const allowedOrigins = [CORS_ORIGIN, 'http://localhost:3000', 'http://localhost:3001'];
+
+// Dinamik origin kontrolü (Vercel .app domainlerine izin ver)
+const originDelegate = (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin) {
+        return callback(null, true); // No origin is fine (e.g. from curl)
+    }
+    if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+    }
+    if (origin.endsWith('.vercel.app')) {
+        return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+};
+
 const io = new Server(httpServer, {
     cors: {
-        origin: [CORS_ORIGIN, 'http://localhost:3000'],
+        origin: originDelegate,
         credentials: true,
     },
 });
 
 // Middleware'ler
 app.use(cors({
-    origin: [CORS_ORIGIN, 'http://localhost:3000', 'http://localhost:3001'],
+    origin: originDelegate,
     credentials: true,
 }));
 app.use(express.json());
