@@ -176,21 +176,20 @@ export function setupMultiplayer(io: Server): void {
                 // 1. Tetikleyen kişiye
                 playerRooms.set(socket.id, roomId);
                 socket.join(roomId);
+                console.log(`📡 SEND MATCH FOUND TO HOST: ${username}`);
                 socket.emit('match_found', matchInfo);
 
                 // 2. Diğerlerine
                 for (const opp of selectedOpponents) {
                     playerRooms.set(opp.socketId, roomId);
-                    // Odaya al (async ama beklemesek de olur çünkü bireysel emit yapıyoruz)
+                    console.log(`📡 SEND MATCH FOUND TO OPP: ${opp.username}`);
                     io.in(opp.socketId).socketsJoin(roomId);
-                    // Bireysel mesaj
                     io.to(opp.socketId).emit('match_found', matchInfo);
                 }
 
-                console.log(`⚔️ MATCH FOUND! Oda: ${roomId} | Katılanlar: ${matchPlayersResponse.map(p => p.username).join(', ')}`);
+                console.log(`⚔️ MATCH FOUND!`);
 
-                // Oyunun başlaması için kısa bir gecikme (Clientların sayfaya yönlenmesi için)
-                setTimeout(() => startRound(io, roomId), 3500);
+                setTimeout(() => startRound(io, roomId), 4000);
             } else {
                 // Kuyruğa ekle
                 matchQueue.push({ socketId: socket.id, uid, username, mapId, mode, maxPlayers });
