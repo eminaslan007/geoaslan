@@ -174,17 +174,16 @@ export function setupMultiplayer(io: Server): void {
                 // Kendi işlemleri
                 playerRooms.set(socket.id, roomId);
                 socket.join(roomId);
-                socket.emit('match_found', matchInfo);
 
                 // Diğer oyuncuların işlemleri
                 selectedOpponents.forEach(opp => {
                     playerRooms.set(opp.socketId, roomId);
-                    const opponentSocket = io.sockets.sockets.get(opp.socketId);
-                    if (opponentSocket) {
-                        opponentSocket.join(roomId);
-                        opponentSocket.emit('match_found', matchInfo);
-                    }
+                    // Püf nokta: .socketsJoin(roomId) adapter üzerinden çalıştığı için memory'de kopukluk olsa bile odaya alır.
+                    io.in(opp.socketId).socketsJoin(roomId);
                 });
+
+                // Herkese "eşleşme bulundu" mesajını yolla! (Tüm socketlerin roomId'ye girdiğinden emin olduk)
+                io.to(roomId).emit('match_found', matchInfo);
 
                 console.log(`⚔️ Otomatik Eşleşme Bulundu (${maxPlayers} Kişi) — Oda: ${roomId} | Katılanlar: ${matchPlayersResponse.map(p => p.username).join(', ')}`);
 
